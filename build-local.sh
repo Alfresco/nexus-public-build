@@ -4,7 +4,7 @@ set -e
 # Local build script for Nexus OSS
 # Usage: ./build-local.sh [version]
 
-VERSION=${1:-"release-3.89.0-09"}
+VERSION=${1:-"release-3.91.1-04"}
 NEXUS_DIR="nexus-public"
 PROJECT_VERSION=""
 
@@ -103,6 +103,25 @@ clone_or_update() {
         echo "⚠️  Could not determine project version, using placeholder '$PROJECT_VERSION'"
     fi
 
+    echo ""
+}
+
+# Apply source patches required for the CORE (OSS) edition
+patch_source() {
+    echo "🩹 Applying CORE edition source patches..."
+
+    # In Nexus 3.90.1-01 the AssetBlobCleanupTask was refactored to depend on
+    # RecoveryModeService, but no CORE-edition implementation is shipped in the
+    # public source tree (applies to 3.90.1-01, 3.90.2-06, 3.91.1-04+). We inject a
+    # simple no-op bean so the Spring context starts up successfully.
+    local target_dir="$NEXUS_DIR/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
+    mkdir -p "$target_dir"
+
+    # Determine the directory where this script lives so the patch file is always found
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    cp "$script_dir/patches/RecoveryModeServiceImpl.java" "$target_dir/RecoveryModeServiceImpl.java"
+
+    echo "  ✅ RecoveryModeServiceImpl.java patched into nexus-scheduling"
     echo ""
 }
 
@@ -238,6 +257,7 @@ find_artifacts() {
 main() {
     check_requirements
     clone_or_update
+    patch_source
     install_dependencies
     build_frontend
     build_nexus
