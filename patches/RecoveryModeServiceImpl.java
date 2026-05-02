@@ -1,7 +1,7 @@
 /*
  * This file is a build-time patch for Nexus Repository OSS (CORE edition).
  * It is made available under the terms of the Eclipse Public License Version 1.0,
- * which accompanies this distribution and is available at http://www.eclipse.org/legal/epl-v10.html.
+ * which accompanies this distribution and is available at https://www.eclipse.org/legal/epl-v10.html.
  *
  * This patch is not part of the original Nexus source code and is not affiliated with
  * or endorsed by Sonatype, Inc. "Sonatype" and "Sonatype Nexus" are trademarks of Sonatype, Inc.
