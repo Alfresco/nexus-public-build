@@ -162,7 +162,7 @@ Docker images are automatically built and published to the GitHub Container Regi
 docker pull ghcr.io/christianhoesel/nexus-public-build:latest
 
 # Pull specific version
-docker pull ghcr.io/christianhoesel/nexus-public-build:3.90.1-01
+docker pull ghcr.io/christianhoesel/nexus-public-build:<version>
 ```
 
 See [DOCKER.md](DOCKER.md) for complete Docker usage documentation.
