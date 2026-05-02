@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       nexus_version:
-        description: 'Nexus version/branch to build (e.g., release-3.90.2-06)'
+        description: 'Nexus version/branch to build (e.g., release-3.91.1-04)'
         required: true
-        default: 'release-3.90.2-06'
+        default: 'release-3.91.1-04'
   push:
     branches:
       - main
@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: sonatype/nexus-public
-          ref: ${{ github.event.inputs.nexus_version || 'release-3.90.2-06' }}
+          ref: ${{ github.event.inputs.nexus_version || 'release-3.91.1-04' }}
           path: nexus-public
           fetch-depth: 1
 
@@ -40,7 +40,7 @@ jobs:
         run: |
           # In Nexus 3.90.1-01 the AssetBlobCleanupTask was refactored to depend on
           # RecoveryModeService, but no CORE-edition implementation is shipped in the
-          # public source tree (applies to 3.90.1-01 and 3.90.2-06+). We inject a
+          # public source tree (applies to 3.90.1-01, 3.90.2-06, 3.91.1-04+). We inject a
           # simple no-op bean so the Spring context starts up successfully.
           TARGET_DIR="nexus-public/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
           mkdir -p "$TARGET_DIR"
