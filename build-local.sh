@@ -117,59 +117,9 @@ patch_source() {
     local target_dir="$NEXUS_DIR/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
     mkdir -p "$target_dir"
 
-    cat > "$target_dir/RecoveryModeServiceImpl.java" << 'JAVA_EOF'
-/*
- * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-present Sonatype, Inc.
- * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
- *
- * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
- * which accompanies this distribution and is available at http://www.eclipse.org/legal/epl-v10.html.
- *
- * Sonatype Nexus (TM) Professional Version is available from Sonatype, Inc. "Sonatype" and "Sonatype Nexus" are trademarks
- * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
- * Eclipse Foundation. All other trademarks are the property of their respective owners.
- */
-package org.sonatype.nexus.scheduling.internal;
-
-import jakarta.inject.Singleton;
-import org.sonatype.nexus.scheduling.RecoveryModeService;
-import org.springframework.stereotype.Component;
-
-/**
- * No-op {@link RecoveryModeService} for the CORE (OSS) edition.
- *
- * Recovery mode is a Professional-edition feature. This stub ensures the Spring
- * context initialises successfully when no PRO implementation is present.
- *
- * @since 3.90
- */
-@Component
-@Singleton
-public class RecoveryModeServiceImpl
-    implements RecoveryModeService
-{
-  @Override
-  public boolean isRecoveryMode() {
-    return false;
-  }
-
-  @Override
-  public void enableRecoveryMode() {
-    // Not supported in CORE edition
-  }
-
-  @Override
-  public void disableRecoveryMode() {
-    // Not supported in CORE edition
-  }
-
-  @Override
-  public void ensureNotInRecoveryMode(final String taskName) {
-    // Recovery mode is never active in CORE edition
-  }
-}
-JAVA_EOF
+    # Determine the directory where this script lives so the patch file is always found
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    cp "$script_dir/patches/RecoveryModeServiceImpl.java" "$target_dir/RecoveryModeServiceImpl.java"
 
     echo "  ✅ RecoveryModeServiceImpl.java patched into nexus-scheduling"
     echo ""
