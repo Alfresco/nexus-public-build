@@ -1,10 +1,9 @@
 /*
- * This file is a build-time patch for Nexus Repository OSS (CORE edition).
- * It is made available under the terms of the Eclipse Public License Version 1.0,
- * which accompanies this distribution and is available at https://www.eclipse.org/legal/epl-v10.html.
+ * This file is a build-time workaround patch for Nexus Repository OSS (CORE edition).
+ * It is maintained in this repository and is not part of the original Sonatype source tree.
  *
- * This patch is not part of the original Nexus source code and is not affiliated with
- * or endorsed by Sonatype, Inc. "Sonatype" and "Sonatype Nexus" are trademarks of Sonatype, Inc.
+ * This patch is made available under the terms of the Eclipse Public License Version 1.0,
+ * which accompanies this distribution and is available at https://www.eclipse.org/legal/epl-v10.html.
  */
 package org.sonatype.nexus.scheduling.internal;
 
