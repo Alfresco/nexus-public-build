@@ -117,7 +117,7 @@ patch_source() {
     local target_dir="$NEXUS_DIR/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
     mkdir -p "$target_dir"
 
-    # Determine the directory where this script lives so the patch file is always found
+    # Determine the directory where this script lives so the patch files are always found
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     cp "$script_dir/patches/RecoveryModeServiceImpl.java" "$target_dir/RecoveryModeServiceImpl.java"
 
@@ -127,44 +127,7 @@ patch_source() {
     # without the nullable handling used elsewhere in the OSS sources. Patch it so
     # the CORE edition can start without the proprietary bean.
     local repository_internal_resource="$NEXUS_DIR/public/common/components/nexus-repository-services/src/main/java/org/sonatype/nexus/repository/rest/internal/api/RepositoryInternalResource.java"
-    python3 - "$repository_internal_resource" <<'PY'
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-text = path.read_text()
-replacements = [
-    (
-        "      @Qualifier(\"default\") final ApiRepositoryAdapter defaultAdapter,\n"
-        "      final RepositoryMetricsService repositoryMetricsService)\n",
-        "      @Qualifier(\"default\") final ApiRepositoryAdapter defaultAdapter,\n"
-        "      @Nullable final RepositoryMetricsService repositoryMetricsService)\n",
-    ),
-    (
-        "    this.defaultAdapter = checkNotNull(defaultAdapter);\n"
-        "    this.repositoryMetricsService = checkNotNull(repositoryMetricsService);\n",
-        "    this.defaultAdapter = checkNotNull(defaultAdapter);\n"
-        "    this.repositoryMetricsService = repositoryMetricsService;\n",
-    ),
-    (
-        "    Map<String, RepositoryMetricsDTO> metricsByName = repositoryMetricsService.list()\n"
-        "        .stream()\n"
-        "        .collect(Collectors.toMap(RepositoryMetricsDTO::getName, m -> m));\n",
-        "    Map<String, RepositoryMetricsDTO> metricsByName = repositoryMetricsService != null\n"
-        "        ? repositoryMetricsService.list()\n"
-        "            .stream()\n"
-        "            .collect(Collectors.toMap(RepositoryMetricsDTO::getName, m -> m))\n"
-        "        : Map.of();\n",
-    ),
-]
-
-for old, new in replacements:
-    if old not in text:
-        raise SystemExit(f\"required patch pattern not found in {path}\")
-    text = text.replace(old, new, 1)
-
-path.write_text(text)
-PY
+    cp "$script_dir/patches/RepositoryInternalResource.java" "$repository_internal_resource"
 
     echo "  ✅ RepositoryInternalResource patched for missing OSS RepositoryMetricsService"
     echo ""
