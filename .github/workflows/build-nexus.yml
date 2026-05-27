@@ -51,43 +51,8 @@ jobs:
           # RepositoryMetricsService without nullable handling, but OSS does not
           # ship that bean. Patch it to match the nullable pattern already used
           # by the surrounding OSS code.
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path("nexus-public/public/common/components/nexus-repository-services/src/main/java/org/sonatype/nexus/repository/rest/internal/api/RepositoryInternalResource.java")
-          text = path.read_text()
-          replacements = [
-              (
-                  "      @Qualifier(\"default\") final ApiRepositoryAdapter defaultAdapter,\n"
-                  "      final RepositoryMetricsService repositoryMetricsService)\n",
-                  "      @Qualifier(\"default\") final ApiRepositoryAdapter defaultAdapter,\n"
-                  "      @Nullable final RepositoryMetricsService repositoryMetricsService)\n",
-              ),
-              (
-                  "    this.defaultAdapter = checkNotNull(defaultAdapter);\n"
-                  "    this.repositoryMetricsService = checkNotNull(repositoryMetricsService);\n",
-                  "    this.defaultAdapter = checkNotNull(defaultAdapter);\n"
-                  "    this.repositoryMetricsService = repositoryMetricsService;\n",
-              ),
-              (
-                  "    Map<String, RepositoryMetricsDTO> metricsByName = repositoryMetricsService.list()\n"
-                  "        .stream()\n"
-                  "        .collect(Collectors.toMap(RepositoryMetricsDTO::getName, m -> m));\n",
-                  "    Map<String, RepositoryMetricsDTO> metricsByName = repositoryMetricsService != null\n"
-                  "        ? repositoryMetricsService.list()\n"
-                  "            .stream()\n"
-                  "            .collect(Collectors.toMap(RepositoryMetricsDTO::getName, m -> m))\n"
-                  "        : Map.of();\n",
-              ),
-          ]
-
-          for old, new in replacements:
-              if old not in text:
-                  raise SystemExit(f"required patch pattern not found in {path}")
-              text = text.replace(old, new, 1)
-
-          path.write_text(text)
-          PY
+          REPOSITORY_INTERNAL_RESOURCE="nexus-public/public/common/components/nexus-repository-services/src/main/java/org/sonatype/nexus/repository/rest/internal/api/RepositoryInternalResource.java"
+          cp patches/RepositoryInternalResource.java "$REPOSITORY_INTERNAL_RESOURCE"
           echo "✅ RepositoryInternalResource patched for missing OSS RepositoryMetricsService"
 
       - name: Set up Java 21

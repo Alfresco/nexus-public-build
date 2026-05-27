@@ -171,11 +171,7 @@ public class RepositoryInternalResource
   @GET
   @Path("/details")
   public List<RepositoryDetailXO> getRepositoryDetails() {
-    Map<String, RepositoryMetricsDTO> metricsByName = repositoryMetricsService != null
-        ? repositoryMetricsService.list()
-            .stream()
-            .collect(Collectors.toMap(RepositoryMetricsDTO::getName, m -> m))
-        : Map.of();
+    Map<String, RepositoryMetricsDTO> metricsByName = getMetricsByName();
 
     return stream(repositoryManager.browse())
         .filter(repository -> repositoryPermissionChecker.userHasRepositoryAdminPermission(repository, READ))
@@ -214,11 +210,7 @@ public class RepositoryInternalResource
     List<String> typeList = parseCommaSeparated(types);
     List<String> statusList = parseCommaSeparated(statuses);
 
-    Map<String, RepositoryMetricsDTO> metricsByName = repositoryMetricsService != null
-        ? repositoryMetricsService.list()
-            .stream()
-            .collect(Collectors.toMap(RepositoryMetricsDTO::getName, m -> m))
-        : Map.of();
+    Map<String, RepositoryMetricsDTO> metricsByName = getMetricsByName();
 
     // Build filtered stream - use userCanBrowseRepositories to allow anonymous access
     List<RepositoryDetailXO> allRepos =
@@ -248,6 +240,14 @@ public class RepositoryInternalResource
         : new ArrayList<>();
 
     return new RepositoryDetailPageXO(pageData, totalCount, actualPage, actualPageSize);
+  }
+
+  private Map<String, RepositoryMetricsDTO> getMetricsByName() {
+    return repositoryMetricsService != null
+        ? repositoryMetricsService.list()
+            .stream()
+            .collect(Collectors.toMap(RepositoryMetricsDTO::getName, m -> m))
+        : Map.of();
   }
 
   private List<String> parseCommaSeparated(String value) {
