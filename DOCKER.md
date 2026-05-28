@@ -49,8 +49,8 @@ The Docker image supports the following environment variables:
 ### JVM Configuration
 
 - **INSTALL4J_ADD_VM_PARAMS**: JVM parameters for Nexus
-  - Default: `-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=/nexus-data/javaprefs -Dnexus.edition=CORE`
-  - Example: `-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Dnexus.edition=CORE`
+  - Default: `-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=/nexus-data/javaprefs`
+  - Example: `-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g`
 
 ### Nexus Configuration
 
@@ -106,14 +106,14 @@ To allocate more memory (e.g., 4 GB):
 ```bash
 docker run -d -p 8081:8081 \
   -v nexus-data:/nexus-data \
-  -e INSTALL4J_ADD_VM_PARAMS="-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=/nexus-data/javaprefs -Dnexus.edition=CORE" \
+  -e INSTALL4J_ADD_VM_PARAMS="-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=/nexus-data/javaprefs" \
   ghcr.io/christianhoesel/nexus-public-build:latest
 ```
 
 Or in docker-compose.yml:
 ```yaml
 environment:
-  - INSTALL4J_ADD_VM_PARAMS=-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=/nexus-data/javaprefs -Dnexus.edition=CORE
+  - INSTALL4J_ADD_VM_PARAMS=-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=/nexus-data/javaprefs
 ```
 
 ## Available Tags
@@ -276,7 +276,7 @@ If you want to build the Docker image yourself:
 
 ```bash
 # Build Nexus first
-./build-local.sh release-3.91.1-04
+./build-local.sh release-3.92.3-01
 
 # Find the built artifact
 TARBALL=$(find nexus-public -name "nexus-*.tar.gz" | head -n 1)

@@ -37,7 +37,7 @@ For detailed Docker usage, configuration, and troubleshooting, see [DOCKER.md](D
 1. Go to the "Actions" tab in this repository
 2. Select the workflow "Build Nexus OSS"
 3. Click on "Run workflow"
-4. Enter the desired Nexus version (e.g., `release-3.91.1-04`)
+4. Enter the desired Nexus version (e.g., `release-3.92.3-01`)
 5. Built artifacts can be found under "Artifacts" after the build completes
 
 ### Available Versions
@@ -46,8 +46,8 @@ Find Nexus versions here:
 - **Branches**: https://github.com/sonatype/nexus-public/branches/all
 - **Releases/Tags**: https://github.com/sonatype/nexus-public/releases
 
-Current examples (as of March 2026):
-- `release-3.91.1-04` (latest)
+Current examples (as of May 2026):
+- `release-3.92.3-01` (latest)
 - `release-3.89.0-09`  
 
 
@@ -60,7 +60,7 @@ If you want to build locally:
 ```bash
 # Simply use the build script
 chmod +x build-local.sh
-./build-local.sh release-3.91.1-04
+./build-local.sh release-3.92.3-01
 ```
 
 The build script automatically performs the following steps:
@@ -72,7 +72,7 @@ The build script automatically performs the following steps:
 6. Runs Maven build with `-Ppublic -Dskip.installyarn -Dskip.yarn -DskipTests`
 7. Creates `.tar.gz` and `.zip` distributions
 
-The finished artifacts can then be found in the workspace root:
+The finished artifacts can then be found in the Nexus build tree:
 - `nexus-*-unix.tar.gz` (~133 MB)
 - `nexus-*-unix.zip`
 
@@ -95,12 +95,11 @@ bin/nexus run
 The `nexus-env.sh` script sets the required `INSTALL4J_ADD_VM_PARAMS` environment variable with:
 - Memory settings (2.7GB heap and direct memory by default)
 - Java preferences location
-- Nexus edition set to CORE
 
 You can also set `INSTALL4J_ADD_VM_PARAMS` manually if you want to customize memory settings:
 
 ```bash
-export INSTALL4J_ADD_VM_PARAMS="-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=${NEXUS_DATA:-./sonatype-work/nexus3}/javaprefs -Dnexus.edition=CORE"
+export INSTALL4J_ADD_VM_PARAMS="-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=${NEXUS_DATA:-./sonatype-work/nexus3}/javaprefs"
 bin/nexus run
 ```
 

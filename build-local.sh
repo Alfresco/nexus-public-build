@@ -4,7 +4,7 @@ set -e
 # Local build script for Nexus OSS
 # Usage: ./build-local.sh [version]
 
-VERSION=${1:-"release-3.91.1-04"}
+VERSION=${1:-"release-3.92.3-01"}
 NEXUS_DIR="nexus-public"
 PROJECT_VERSION=""
 
@@ -117,11 +117,19 @@ patch_source() {
     local target_dir="$NEXUS_DIR/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
     mkdir -p "$target_dir"
 
-    # Determine the directory where this script lives so the patch file is always found
+    # Determine the directory where this script lives so the patch files are always found
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     cp "$script_dir/patches/RecoveryModeServiceImpl.java" "$target_dir/RecoveryModeServiceImpl.java"
 
     echo "  ✅ RecoveryModeServiceImpl.java patched into nexus-scheduling"
+
+    # Nexus 3.92.3-01 wires RepositoryInternalResource to RepositoryMetricsService
+    # without the nullable handling used elsewhere in the OSS sources. Patch it so
+    # the CORE edition can start without the proprietary bean.
+    local repository_internal_resource="$NEXUS_DIR/public/common/components/nexus-repository-services/src/main/java/org/sonatype/nexus/repository/rest/internal/api/RepositoryInternalResource.java"
+    cp "$script_dir/patches/RepositoryInternalResource.java" "$repository_internal_resource"
+
+    echo "  ✅ RepositoryInternalResource patched for missing OSS RepositoryMetricsService"
     echo ""
 }
 
@@ -177,26 +185,14 @@ build_nexus() {
 
 package_distribution() {
     echo "📦 Packaging Nexus distribution..."
-    local assembly_dir="$NEXUS_DIR/assemblies/nexus-repository-core/target/assembly"
+    local assembly_dir="$NEXUS_DIR/public/selfhosted/assemblies/nexus-repository-core/target/assembly"
     if [ ! -d "$assembly_dir" ]; then
         echo "❌ Assembly directory not found: $assembly_dir"
         return
     fi
 
-    local target_dir="$NEXUS_DIR/assemblies/nexus-repository-core/target"
+    local target_dir="$NEXUS_DIR/public/selfhosted/assemblies/nexus-repository-core/target"
     local base_name="nexus-${PROJECT_VERSION}"
-
-    # Create etc directory if it doesn't exist and add default nexus.properties with nexus.edition=CORE
-    mkdir -p "$assembly_dir/etc"
-    cat > "$assembly_dir/etc/nexus.properties" << 'EOF'
-# Default Nexus properties
-# This file sets default configuration values for Nexus Repository
-# You can override these settings by creating a nexus.properties file
-# in your NEXUS_DATA/etc directory (e.g., /nexus-data/etc/nexus.properties)
-
-# Set the Nexus edition to CORE (required for OSS version)
-nexus.edition=CORE
-EOF
 
     # Create bin directory if it doesn't exist and add nexus-env.sh to set INSTALL4J_ADD_VM_PARAMS
     mkdir -p "$assembly_dir/bin"
@@ -209,7 +205,7 @@ EOF
 
 # Only set if not already defined
 if [ -z "$INSTALL4J_ADD_VM_PARAMS" ]; then
-  export INSTALL4J_ADD_VM_PARAMS="-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=${NEXUS_DATA:-./sonatype-work/nexus3}/javaprefs -Dnexus.edition=CORE"
+  export INSTALL4J_ADD_VM_PARAMS="-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=${NEXUS_DATA:-./sonatype-work/nexus3}/javaprefs"
   echo "INSTALL4J_ADD_VM_PARAMS set to: $INSTALL4J_ADD_VM_PARAMS"
 else
   echo "INSTALL4J_ADD_VM_PARAMS already set to: $INSTALL4J_ADD_VM_PARAMS"
