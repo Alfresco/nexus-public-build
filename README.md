@@ -37,7 +37,7 @@ For detailed Docker usage, configuration, and troubleshooting, see [DOCKER.md](D
 1. Go to the "Actions" tab in this repository
 2. Select the workflow "Build Nexus OSS"
 3. Click on "Run workflow"
-4. Enter the desired Nexus version (e.g., `release-3.92.3-01`)
+4. Enter the desired Nexus version (e.g., `release-3.93.0-06`)
 5. Built artifacts can be found under "Artifacts" after the build completes
 
 ### Available Versions
@@ -46,8 +46,8 @@ Find Nexus versions here:
 - **Branches**: https://github.com/sonatype/nexus-public/branches/all
 - **Releases/Tags**: https://github.com/sonatype/nexus-public/releases
 
-Current examples (as of May 2026):
-- `release-3.92.3-01` (latest)
+Current examples (as of June 2026):
+- `release-3.93.0-06` (latest)
 - `release-3.89.0-09`  
 
 
@@ -60,7 +60,7 @@ If you want to build locally:
 ```bash
 # Simply use the build script
 chmod +x build-local.sh
-./build-local.sh release-3.92.3-01
+./build-local.sh release-3.93.0-06
 ```
 
 The build script automatically performs the following steps:
