@@ -33,15 +33,15 @@ check_requirements() {
     fi
     
     JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
-    if [ "$JAVA_VERSION" != "21" ]; then
-        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java 21 is recommended."
+    if [ "$JAVA_VERSION" != "25" ]; then
+        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java 25 is recommended."
         read -p "Continue anyway? (y/n) " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             exit 1
         fi
     else
-        echo "✅ Java 21 found"
+        echo "✅ Java 25 found"
     fi
     
     # Check Node.js

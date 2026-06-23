@@ -18,7 +18,7 @@ on:
     # - cron: '0 2 * * 1'
 
 env:
-  JAVA_VERSION: '21'
+  JAVA_VERSION: '25'
 
 jobs:
   build:
@@ -55,11 +55,11 @@ jobs:
           cp patches/RepositoryInternalResource.java "$REPOSITORY_INTERNAL_RESOURCE"
           echo "✅ RepositoryInternalResource patched for missing OSS RepositoryMetricsService"
 
-      - name: Set up Java 21
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
           cache: 'maven'
 
       - name: Setup Node.js
@@ -315,11 +315,11 @@ jobs:
           # Ensure bin scripts are executable
           chmod +x "$NEXUS_DIR/bin"/*
 
-      - name: Set up Java 21
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
 
       - name: Start Nexus
         run: |
