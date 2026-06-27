@@ -4,7 +4,7 @@ set -e
 # Local build script for Nexus OSS
 # Usage: ./build-local.sh [version]
 
-VERSION=${1:-"release-3.92.3-01"}
+VERSION=${1:-"release-3.93.0-06"}
 NEXUS_DIR="nexus-public"
 PROJECT_VERSION=""
 
@@ -33,15 +33,15 @@ check_requirements() {
     fi
     
     JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
-    if [ "$JAVA_VERSION" != "21" ]; then
-        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java 21 is recommended."
+    if [ "$JAVA_VERSION" != "25" ]; then
+        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java 25 is recommended."
         read -p "Continue anyway? (y/n) " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             exit 1
         fi
     else
-        echo "✅ Java 21 found"
+        echo "✅ Java 25 found"
     fi
     
     # Check Node.js
@@ -112,7 +112,7 @@ patch_source() {
 
     # In Nexus 3.90.1-01 the AssetBlobCleanupTask was refactored to depend on
     # RecoveryModeService, but no CORE-edition implementation is shipped in the
-    # public source tree (applies to 3.90.1-01, 3.90.2-06, 3.91.1-04+). We inject a
+    # public source tree (applies to 3.90.1-01, 3.90.2-06, 3.91.1-04, 3.93.0-06+). We inject a
     # simple no-op bean so the Spring context starts up successfully.
     local target_dir="$NEXUS_DIR/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
     mkdir -p "$target_dir"
@@ -123,7 +123,7 @@ patch_source() {
 
     echo "  ✅ RecoveryModeServiceImpl.java patched into nexus-scheduling"
 
-    # Nexus 3.92.3-01 wires RepositoryInternalResource to RepositoryMetricsService
+    # Nexus 3.92.3-01+ wires RepositoryInternalResource to RepositoryMetricsService
     # without the nullable handling used elsewhere in the OSS sources. Patch it so
     # the CORE edition can start without the proprietary bean.
     local repository_internal_resource="$NEXUS_DIR/public/common/components/nexus-repository-services/src/main/java/org/sonatype/nexus/repository/rest/internal/api/RepositoryInternalResource.java"
