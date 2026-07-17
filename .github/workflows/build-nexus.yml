@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       nexus_version:
-        description: 'Nexus version/branch to build (e.g., release-3.93.0-06)'
+        description: 'Nexus version/branch to build (e.g., release-3.94.0-12)'
         required: true
-        default: 'release-3.93.0-06'
+        default: 'release-3.94.0-12'
   push:
     branches:
       - main
@@ -32,28 +32,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: sonatype/nexus-public
-          ref: ${{ github.event.inputs.nexus_version || 'release-3.93.0-06' }}
+          ref: ${{ github.event.inputs.nexus_version || 'release-3.94.0-12' }}
           path: nexus-public
           fetch-depth: 1
 
       - name: Patch source for CORE edition
         run: |
-          # In Nexus 3.90.1-01 the AssetBlobCleanupTask was refactored to depend on
-          # RecoveryModeService, but no CORE-edition implementation is shipped in the
-          # public source tree (applies to 3.90.1-01, 3.90.2-06, 3.91.1-04, 3.93.0-06+). We inject a
-          # simple no-op bean so the Spring context starts up successfully.
-          TARGET_DIR="nexus-public/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
-          mkdir -p "$TARGET_DIR"
-          cp patches/RecoveryModeServiceImpl.java "$TARGET_DIR/RecoveryModeServiceImpl.java"
-          echo "✅ RecoveryModeServiceImpl.java patched into nexus-scheduling"
-
-          # Nexus 3.92.3-01+ wires RepositoryInternalResource to
-          # RepositoryMetricsService without nullable handling, but OSS does not
-          # ship that bean. Patch it to match the nullable pattern already used
-          # by the surrounding OSS code.
-          REPOSITORY_INTERNAL_RESOURCE="nexus-public/public/common/components/nexus-repository-services/src/main/java/org/sonatype/nexus/repository/rest/internal/api/RepositoryInternalResource.java"
-          cp patches/RepositoryInternalResource.java "$REPOSITORY_INTERNAL_RESOURCE"
-          echo "✅ RepositoryInternalResource patched for missing OSS RepositoryMetricsService"
+          # No source patches are required for Nexus 3.94.0-12.
+          # Sonatype fixed the previously needed workarounds upstream:
+          # - AssetBlobCleanupTask now accepts @Nullable RecoveryModeService.
+          # - RepositoryInternalResource now accepts @Nullable RepositoryMetricsService.
+          echo "ℹ️  No source patches to apply for ${{ github.event.inputs.nexus_version || 'release-3.94.0-12' }}"
 
       - name: Set up Java 25
         uses: actions/setup-java@v4
