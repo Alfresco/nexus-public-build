@@ -106,17 +106,6 @@ clone_or_update() {
     echo ""
 }
 
-# Apply source patches required for the CORE (OSS) edition
-patch_source() {
-    echo "🩹 Applying CORE edition source patches..."
-
-    # No source patches are currently required for Nexus 3.94.0-12.
-    # Sonatype fixed the previously needed workarounds upstream:
-    # - AssetBlobCleanupTask now accepts @Nullable RecoveryModeService.
-    # - RepositoryInternalResource now accepts @Nullable RepositoryMetricsService.
-    echo "  ℹ️  No patches to apply for $VERSION"
-    echo ""
-}
 
 # Install dependencies
 install_dependencies() {
@@ -238,7 +227,6 @@ find_artifacts() {
 main() {
     check_requirements
     clone_or_update
-# patch_source kept as a hook; currently no patches are required
     install_dependencies
     build_frontend
     build_nexus

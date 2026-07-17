@@ -36,7 +36,7 @@ jobs:
           path: nexus-public
           fetch-depth: 1
 
-      - name: Patch source for CORE edition
+      - name: Check for required source patches
         run: |
           # No source patches are required for Nexus 3.94.0-12.
           # Sonatype fixed the previously needed workarounds upstream:
