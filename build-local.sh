@@ -4,7 +4,7 @@ set -e
 # Local build script for Nexus OSS
 # Usage: ./build-local.sh [version]
 
-VERSION=${1:-"release-3.93.0-06"}
+VERSION=${1:-"release-3.94.0-12"}
 NEXUS_DIR="nexus-public"
 PROJECT_VERSION=""
 
@@ -33,15 +33,15 @@ check_requirements() {
     fi
     
     JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
-    if [ "$JAVA_VERSION" != "25" ]; then
-        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java 25 is recommended."
+    if [ "$JAVA_VERSION" != "21" ] && [ "$JAVA_VERSION" != "25" ]; then
+        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java 21 or 25 is recommended."
         read -p "Continue anyway? (y/n) " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             exit 1
         fi
     else
-        echo "✅ Java 25 found"
+        echo "✅ Java $JAVA_VERSION found"
     fi
     
     # Check Node.js
@@ -106,32 +106,6 @@ clone_or_update() {
     echo ""
 }
 
-# Apply source patches required for the CORE (OSS) edition
-patch_source() {
-    echo "🩹 Applying CORE edition source patches..."
-
-    # In Nexus 3.90.1-01 the AssetBlobCleanupTask was refactored to depend on
-    # RecoveryModeService, but no CORE-edition implementation is shipped in the
-    # public source tree (applies to 3.90.1-01, 3.90.2-06, 3.91.1-04, 3.93.0-06+). We inject a
-    # simple no-op bean so the Spring context starts up successfully.
-    local target_dir="$NEXUS_DIR/public/common/components/nexus-scheduling/src/main/java/org/sonatype/nexus/scheduling/internal"
-    mkdir -p "$target_dir"
-
-    # Determine the directory where this script lives so the patch files are always found
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    cp "$script_dir/patches/RecoveryModeServiceImpl.java" "$target_dir/RecoveryModeServiceImpl.java"
-
-    echo "  ✅ RecoveryModeServiceImpl.java patched into nexus-scheduling"
-
-    # Nexus 3.92.3-01+ wires RepositoryInternalResource to RepositoryMetricsService
-    # without the nullable handling used elsewhere in the OSS sources. Patch it so
-    # the CORE edition can start without the proprietary bean.
-    local repository_internal_resource="$NEXUS_DIR/public/common/components/nexus-repository-services/src/main/java/org/sonatype/nexus/repository/rest/internal/api/RepositoryInternalResource.java"
-    cp "$script_dir/patches/RepositoryInternalResource.java" "$repository_internal_resource"
-
-    echo "  ✅ RepositoryInternalResource patched for missing OSS RepositoryMetricsService"
-    echo ""
-}
 
 # Install dependencies
 install_dependencies() {
@@ -253,7 +227,6 @@ find_artifacts() {
 main() {
     check_requirements
     clone_or_update
-    patch_source
     install_dependencies
     build_frontend
     build_nexus
