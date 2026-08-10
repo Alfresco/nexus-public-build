@@ -1,5 +1,7 @@
 name: Build Nexus OSS
 
+run-name: Build Nexus OSS (${{ github.event.inputs.nexus_version || 'release-3.94.0-12' }})
+
 on:
   workflow_dispatch:
     inputs:
