@@ -416,8 +416,6 @@ jobs:
   build-docker:
     needs: build
     runs-on: ubuntu-latest
-    # Always build the Docker image, including on PRs, but only push on main branch pushes and manual workflow dispatches
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'pull_request'
     permissions:
       contents: read
       packages: write
