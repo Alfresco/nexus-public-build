@@ -1,5 +1,7 @@
 name: Build Nexus OSS
 
+run-name: Build Nexus OSS (${{ github.event.inputs.nexus_version || 'release-3.94.0-12' }})
+
 on:
   workflow_dispatch:
     inputs:
@@ -26,6 +28,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout this repository
@@ -416,8 +419,7 @@ jobs:
   build-docker:
     needs: build
     runs-on: ubuntu-latest
-    # Build Docker images only on main branch pushes and manual workflow dispatches, not on PRs
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
@@ -450,10 +452,16 @@ jobs:
           # Copy tarball to root for Docker build
           cp "$TARBALL" ./nexus-${VERSION}.tar.gz
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+        with:
+          platforms: arm64
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
@@ -468,13 +476,15 @@ jobs:
           tags: |
             type=raw,value=${{ steps.version.outputs.version }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=sha,prefix={{branch}}-
+            type=sha,prefix={{branch}}-,enable=${{ github.event_name != 'pull_request' }}
+            type=ref,event=pr
 
       - name: Build and push Docker image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
