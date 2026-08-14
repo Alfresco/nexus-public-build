@@ -7,6 +7,8 @@ set -e
 VERSION=${1:-"release-3.94.0-12"}
 NEXUS_DIR="nexus-public"
 PROJECT_VERSION=""
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REQUIRED_JAVA_VERSION="$(<"$SCRIPT_DIR/.java-version")"
 
 echo "========================================"
 echo "Nexus OSS Local Build Script"
@@ -22,19 +24,19 @@ check_requirements() {
     
     # Check Java version
     if ! command -v java &> /dev/null; then
-        echo "❌ Java not found. Please install Java 21."
+        echo "❌ Java not found. Please install Java $REQUIRED_JAVA_VERSION."
         exit 1
     fi
-    
+
     # Set JAVA_HOME if not set
     if [ -z "$JAVA_HOME" ]; then
         export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
         echo "✅ JAVA_HOME set: $JAVA_HOME"
     fi
-    
+
     JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
-    if [ "$JAVA_VERSION" != "21" ] && [ "$JAVA_VERSION" != "25" ]; then
-        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java 21 or 25 is recommended."
+    if [ "$JAVA_VERSION" != "$REQUIRED_JAVA_VERSION" ]; then
+        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java $REQUIRED_JAVA_VERSION is required (.java-version)."
         read -p "Continue anyway? (y/n) " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -103,6 +105,12 @@ clone_or_update() {
         echo "⚠️  Could not determine project version, using placeholder '$PROJECT_VERSION'"
     fi
 
+    echo ""
+}
+
+# Verify upstream still targets the Java version this repo is pinned to
+check_java_versions() {
+    "$SCRIPT_DIR/scripts/check-java-versions.sh" "$NEXUS_DIR/pom.xml"
     echo ""
 }
 
@@ -227,6 +235,7 @@ find_artifacts() {
 main() {
     check_requirements
     clone_or_update
+    check_java_versions
     install_dependencies
     build_frontend
     build_nexus

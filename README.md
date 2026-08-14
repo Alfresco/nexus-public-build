@@ -106,7 +106,7 @@ bin/nexus run
 
 ## Build Requirements
 
-- **Java**: OpenJDK 21 or 25 (Temurin recommended)
+- **Java**: version pinned in [`.java-version`](.java-version) (currently 21, matching upstream's `maven.compiler.release`), Temurin recommended. `scripts/check-java-versions.sh` fails the build if upstream's target ever drifts from this pin.
 - **Node.js**: Version 18 or higher
 - **Corepack**: For Yarn 4 (activate with `corepack enable`)
 - **Yarn**: Version 4.9.1 for frontend build, version 1.22.22 for Maven (automatically managed by build script)
