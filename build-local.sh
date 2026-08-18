@@ -36,15 +36,10 @@ check_requirements() {
 
     JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
     if [ "$JAVA_VERSION" != "$REQUIRED_JAVA_VERSION" ]; then
-        echo "⚠️  Warning: Java $JAVA_VERSION found, but Java $REQUIRED_JAVA_VERSION is required (.java-version)."
-        read -p "Continue anyway? (y/n) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
-    else
-        echo "✅ Java $JAVA_VERSION found"
+        echo "❌ Java $JAVA_VERSION found, but Java $REQUIRED_JAVA_VERSION is required (.java-version)."
+        exit 1
     fi
+    echo "✅ Java $JAVA_VERSION found"
     
     # Check Node.js
     if ! command -v node &> /dev/null; then
@@ -108,7 +103,7 @@ clone_or_update() {
     echo ""
 }
 
-# Verify upstream still targets the Java version this repo is pinned to
+# Report upstream's bytecode target and verify the local JDK matches .java-version
 check_java_versions() {
     "$SCRIPT_DIR/scripts/check-java-versions.sh" "$NEXUS_DIR/pom.xml"
     echo ""

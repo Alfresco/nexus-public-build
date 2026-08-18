@@ -21,7 +21,8 @@ fi
 # Maven already fails loudly on its own if requireJavaVersion isn't met, so this only
 # reports the bytecode target for visibility.
 for prop in maven.compiler.release maven.compiler.source maven.compiler.target; do
-  value=$(sed -n "s|.*<$prop>\([0-9]*\)</$prop>.*|\1|p" "$POM_PATH" | head -n 1)
+  escaped_prop=$(printf '%s' "$prop" | sed 's/\./\\./g')
+  value=$(sed -n "s|.*<$escaped_prop>\([0-9]*\)</$escaped_prop>.*|\1|p" "$POM_PATH" | head -n 1)
   if [ -z "$value" ]; then
     echo "❌ Could not find <$prop> in $POM_PATH — upstream may have restructured its Java version properties." >&2
     exit 1
