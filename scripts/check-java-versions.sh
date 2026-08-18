@@ -15,26 +15,11 @@ if [ ! -f "$POM_PATH" ]; then
   exit 1
 fi
 
-# Upstream's maven-enforcer-plugin enforce-environment execution pins the minimum
-# JDK needed to *build* the project. This is independent of maven.compiler.release
-# below, which pins the bytecode *target* — a newer JDK can compile older bytecode
-# via --release, so the two numbers are allowed to differ.
-REQUIRE_JAVA_RANGE=$(sed -n '/<requireJavaVersion>/,/<\/requireJavaVersion>/{
-s|.*<version>\([^<]*\)</version>.*|\1|p
-}' "$POM_PATH" | head -n 1)
-REQUIRED_MIN_JAVA=$(grep -oE '[0-9]+' <<< "$REQUIRE_JAVA_RANGE" | head -n 1)
-if [ -z "$REQUIRED_MIN_JAVA" ]; then
-  echo "❌ Could not find a <requireJavaVersion><version> minimum in $POM_PATH — upstream may have restructured its enforcer rules." >&2
-  exit 1
-fi
-
-if [ "$PINNED_JAVA_VERSION" -lt "$REQUIRED_MIN_JAVA" ]; then
-  echo "❌ Upstream now requires Java >= $REQUIRED_MIN_JAVA to build (enforcer requireJavaVersion $REQUIRE_JAVA_RANGE) but this repo is pinned to Java $PINNED_JAVA_VERSION via .java-version." >&2
-  echo "   Update .java-version and the devcontainer before building against this ref." >&2
-  exit 1
-fi
-echo "✅ Upstream's minimum build JDK (requireJavaVersion $REQUIRE_JAVA_RANGE) is satisfied by .java-version ($PINNED_JAVA_VERSION)"
-
+# maven.compiler.release/source/target pin the bytecode *target*, which is independent
+# of the build JDK upstream's maven-enforcer-plugin requireJavaVersion rule enforces —
+# a newer JDK can compile older bytecode via --release, so the two numbers may differ.
+# Maven already fails loudly on its own if requireJavaVersion isn't met, so this only
+# reports the bytecode target for visibility.
 for prop in maven.compiler.release maven.compiler.source maven.compiler.target; do
   value=$(sed -n "s|.*<$prop>\([0-9]*\)</$prop>.*|\1|p" "$POM_PATH" | head -n 1)
   if [ -z "$value" ]; then

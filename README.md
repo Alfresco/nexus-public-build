@@ -106,7 +106,7 @@ bin/nexus run
 
 ## Build Requirements
 
-- **Java**: build JDK pinned in [`.java-version`](.java-version) (currently 25, matching upstream's `maven-enforcer-plugin` `requireJavaVersion` minimum), Temurin recommended. This is independent of upstream's `maven.compiler.release` (currently 21), which pins the bytecode target the build produces. `scripts/check-java-versions.sh` fails the build if either ever drifts out of what this pin can satisfy.
+- **Java**: build JDK pinned in [`.java-version`](.java-version) (currently 25), Temurin recommended. This is independent of upstream's `maven.compiler.release` (currently 21), which pins the bytecode target the build produces — Maven's own `maven-enforcer-plugin` already fails the build if the build JDK doesn't meet upstream's minimum. `scripts/check-java-versions.sh` reports the bytecode target and warns if your local JDK doesn't match the pin.
 - **Node.js**: Version 18 or higher
 - **Corepack**: For Yarn 4 (activate with `corepack enable`)
 - **Yarn**: Version 4.9.1 for frontend build, version 1.22.22 for Maven (automatically managed by build script)
