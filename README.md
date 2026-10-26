@@ -37,7 +37,7 @@ For detailed Docker usage, configuration, and troubleshooting, see [DOCKER.md](D
 1. Go to the "Actions" tab in this repository
 2. Select the workflow "Build Nexus OSS"
 3. Click on "Run workflow"
-4. Enter the desired Nexus version (e.g., `release-3.94.0-12`)
+4. Enter the desired Nexus version (e.g., `release-3.97.2-02`)
 5. Built artifacts can be found under "Artifacts" after the build completes
 
 ### Available Versions
@@ -46,10 +46,10 @@ Find Nexus versions here:
 - **Branches**: https://github.com/sonatype/nexus-public/branches/all
 - **Releases/Tags**: https://github.com/sonatype/nexus-public/releases
 
-Current examples (as of July 2026):
-- `release-3.94.0-12` (latest)
+Current examples (as of October 2026):
+- `release-3.97.2-02` (latest)
+- `release-3.94.0-12`
 - `release-3.93.0-06`
-- `release-3.89.0-09`  
 
 
 **Note**: Branch names correspond to release tags. Use the branch name for the build.
@@ -61,7 +61,7 @@ If you want to build locally:
 ```bash
 # Simply use the build script
 chmod +x build-local.sh
-./build-local.sh release-3.94.0-12
+./build-local.sh release-3.97.2-02
 ```
 
 The build script automatically performs the following steps:
@@ -154,7 +154,7 @@ Docker images are automatically built and published to the GitHub Container Regi
 - **Registry**: `ghcr.io/christianhoesel/nexus-public-build`
 - **Tags**: 
   - `latest` - Latest build from main branch
-  - `<version>` - Specific Nexus version (e.g., `3.94.0-12`)
+  - `<version>` - Specific Nexus version (e.g., `3.97.2-02`)
   - `<branch>-<sha>` - Branch-specific builds
 
 ```bash
