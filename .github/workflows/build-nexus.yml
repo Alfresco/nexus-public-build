@@ -22,7 +22,16 @@ permissions:
   contents: read
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pre-commit
+        uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v19.7.1
+        with:
+          auto-commit: "false"
+
   build:
+    needs: pre-commit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
@@ -128,7 +137,7 @@ jobs:
           # This script sets the INSTALL4J_ADD_VM_PARAMS environment variable with default values
           # Source this script before starting Nexus or add it to your shell profile
           # You can also set INSTALL4J_ADD_VM_PARAMS manually to override these defaults
-          
+
           # Only set if not already defined
           if [ -z "$INSTALL4J_ADD_VM_PARAMS" ]; then
             export INSTALL4J_ADD_VM_PARAMS="-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=${NEXUS_DATA:-./sonatype-work/nexus3}/javaprefs"
@@ -217,7 +226,7 @@ jobs:
 
           # Extract version from filename (e.g., nexus-3.86.0-08-unix.tar.gz -> 3.86.0-08)
           VERSION=$(basename "$TARBALL" | sed 's/nexus-\(.*\)-unix\.tar\.gz/\1/')
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Detected Nexus version: ${VERSION}"
 
       - name: Create GitHub Release
@@ -227,13 +236,13 @@ jobs:
           name: Nexus Repository OSS ${{ steps.version.outputs.version }}
           body: |
             Nexus Repository OSS build version ${{ steps.version.outputs.version }}
-            
+
             Built from: ${{ needs.build.outputs.nexus_ref }}
-            
+
             ## Artifacts
             - `nexus-${{ steps.version.outputs.version }}-unix.tar.gz` - Linux/Unix distribution
             - `nexus-${{ steps.version.outputs.version }}.zip` - Windows distribution
-            
+
             ## Docker Image
             ```bash
             docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
@@ -276,25 +285,25 @@ jobs:
             echo "No Nexus tarball found!"
             exit 1
           fi
-          
+
           echo "Found tarball: $TARBALL"
-          
+
           # Extract the tarball
           tar -xzf "$TARBALL" -C ./
-          
+
           # Find the extracted directory
           NEXUS_DIR=$(find . -maxdepth 1 -type d -name "nexus-*" | head -n 1)
           if [ -z "$NEXUS_DIR" ]; then
             echo "No extracted Nexus directory found!"
             exit 1
           fi
-          
-          echo "nexus_dir=${NEXUS_DIR}" >> $GITHUB_OUTPUT
+
+          echo "nexus_dir=${NEXUS_DIR}" >> "$GITHUB_OUTPUT"
           echo "Extracted to: $NEXUS_DIR"
-          
+
           # Verify structure
           ls -la "$NEXUS_DIR/"
-          
+
           # Ensure bin scripts are executable
           chmod +x "$NEXUS_DIR/bin"/*
 
@@ -308,41 +317,41 @@ jobs:
         run: |
           NEXUS_DIR="${{ steps.extract.outputs.nexus_dir }}"
           WORK_DIR="$(pwd)"
-          
+
           # Create proper directory structure (matching official Nexus setup)
           mkdir -p sonatype-work/nexus3
-          
+
           # Set Nexus environment variables
           export NEXUS_DATA="${WORK_DIR}/sonatype-work/nexus3"
           export SONATYPE_WORK="${WORK_DIR}/sonatype-work"
-          
+
           # Create required subdirectories in NEXUS_DATA
           mkdir -p "${NEXUS_DATA}/etc" "${NEXUS_DATA}/log" "${NEXUS_DATA}/tmp"
-          
+
           # Set INSTALL4J_ADD_VM_PARAMS for JVM configuration
           # Memory settings: 1GB heap and 1GB direct memory (adequate for integration test)
           export INSTALL4J_ADD_VM_PARAMS="-Xms1g -Xmx1g -XX:MaxDirectMemorySize=1g -Djava.util.prefs.userRoot=${NEXUS_DATA}/javaprefs"
-          
+
           echo "Starting Nexus in background..."
           echo "NEXUS_DIR: $NEXUS_DIR"
           echo "NEXUS_DATA: $NEXUS_DATA"
           echo "SONATYPE_WORK: $SONATYPE_WORK"
-          
+
           nohup "$NEXUS_DIR/bin/nexus" run > nexus.log 2>&1 &
           NEXUS_PID=$!
           echo "Nexus PID: $NEXUS_PID"
-          
+
           # Save PID for cleanup
-          echo $NEXUS_PID > nexus.pid
+          echo "$NEXUS_PID" > nexus.pid
 
       - name: Wait for Nexus to start
         run: |
           echo "Waiting for Nexus to be ready on port 8081..."
-          
+
           # Wait up to 5 minutes for Nexus to start
           MAX_WAIT=300
           ELAPSED=0
-          
+
           while [ $ELAPSED -lt $MAX_WAIT ]; do
             # First check if port is open
             if curl -f -s http://localhost:8081/ > /dev/null 2>&1; then
@@ -355,18 +364,18 @@ jobs:
               curl -s http://localhost:8081/ | head -20
               exit 0
             fi
-            
+
             echo "Waiting for Nexus to start... ($ELAPSED seconds)"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
-            
+
             # Show last few lines of log for debugging
             if [ -f nexus.log ]; then
               echo "Last 10 lines of nexus.log:"
               tail -10 nexus.log
             fi
           done
-          
+
           echo "❌ Nexus did not start within $MAX_WAIT seconds"
           echo "Full log:"
           cat nexus.log
@@ -377,27 +386,27 @@ jobs:
         run: |
           if [ -f nexus.pid ]; then
             NEXUS_PID=$(cat nexus.pid)
-            if kill -0 $NEXUS_PID 2>/dev/null; then
+            if kill -0 "$NEXUS_PID" 2>/dev/null; then
               echo "Stopping Nexus (PID: $NEXUS_PID)..."
-              kill $NEXUS_PID || true
-              
+              kill "$NEXUS_PID" || true
+
               # Wait up to 15 seconds for graceful shutdown
-              for i in {1..15}; do
-                if ! kill -0 $NEXUS_PID 2>/dev/null; then
+              for _ in {1..15}; do
+                if ! kill -0 "$NEXUS_PID" 2>/dev/null; then
                   echo "Nexus stopped gracefully"
                   break
                 fi
                 sleep 1
               done
-              
+
               # Force kill if still running
-              if kill -0 $NEXUS_PID 2>/dev/null; then
+              if kill -0 "$NEXUS_PID" 2>/dev/null; then
                 echo "Forcing Nexus to stop..."
-                kill -9 $NEXUS_PID 2>/dev/null || true
+                kill -9 "$NEXUS_PID" 2>/dev/null || true
               fi
             fi
           fi
-          
+
           # Show final log for debugging
           if [ -f nexus.log ]; then
             echo "Final Nexus log:"
@@ -434,11 +443,11 @@ jobs:
 
           # Extract version from filename (e.g., nexus-3.86.0-08-unix.tar.gz -> 3.86.0-08)
           VERSION=$(basename "$TARBALL" | sed 's/nexus-\(.*\)-unix\.tar\.gz/\1/')
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Detected Nexus version: ${VERSION}"
 
           # Copy tarball to root for Docker build
-          cp "$TARBALL" ./nexus-${VERSION}.tar.gz
+          cp "$TARBALL" "./nexus-${VERSION}.tar.gz"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
