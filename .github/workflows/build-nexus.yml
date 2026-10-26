@@ -82,45 +82,18 @@ jobs:
 
       - name: Install dependencies with Yarn 4
         working-directory: nexus-public
-        run: |
-          # Remove all Yarn configuration files
-          rm -f .yarnrc.yml .yarnrc
-          find . -name ".yarnrc.yml" -o -name ".yarnrc" | xargs rm -f
-
-          # Reset Yarn cache and global config
-          rm -rf ~/.yarn ~/.yarnrc.yml ~/.yarnrc
-
-          # Create new .yarnrc.yml for Yarn 4
-          cat > .yarnrc.yml << 'EOF'
-          nodeLinker: node-modules
-          EOF
-
-          # Install dependencies with Yarn 4 (allow lockfile creation)
-          yarn install --no-immutable
-
-      - name: Build Frontend Workspaces with Yarn 4
-        working-directory: nexus-public
-        run: |
-          # Build all frontend workspaces with Yarn 4
-          yarn workspaces foreach --all --topological-dev run build-all
-
-      - name: Switch to Yarn 1.x for Maven
-        run: |
-          # Disable Corepack
-          corepack disable || true
-          # Install Yarn 1.22 globally for Maven
-          npm install -g yarn@1.22.22
-          echo "Switched to Yarn version:"
-          yarn --version
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
+          YARN_NODE_LINKER: node-modules
+        run: yarn install
 
       - name: Build Nexus
         working-directory: nexus-public
-        run: |
-          # Maven build with "public" profile
-          # Frontend was already built with Yarn 4, Maven skips frontend steps
-          mvn install -Ppublic -DskipTests -Dmaven.javadoc.skip=true -ntp -Dskip.installyarn -Dskip.yarn
+        run: mvn install -Ppublic -DskipTests -Dmaven.javadoc.skip=true -ntp
         env:
           MAVEN_OPTS: "-Xmx4g -XX:+UseG1GC"
+          # Maven runs the frontend build itself; PnP breaks rspack.
+          YARN_NODE_LINKER: node-modules
 
       - name: Package Distribution
         working-directory: nexus-public
