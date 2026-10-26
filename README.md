@@ -22,8 +22,8 @@ This repository automates the build process with GitHub Actions and creates usab
 The fastest way to run Nexus OSS is using the pre-built Docker image:
 
 ```bash
-docker pull ghcr.io/christianhoesel/nexus-public-build:latest
-docker run -d -p 8081:8081 -v nexus-data:/nexus-data ghcr.io/christianhoesel/nexus-public-build:latest
+docker pull ghcr.io/alfresco/nexus-public-build:latest
+docker run -d -p 8081:8081 -v nexus-data:/nexus-data ghcr.io/alfresco/nexus-public-build:latest
 ```
 
 Access Nexus at http://localhost:8081
@@ -155,7 +155,7 @@ Artifacts are kept for 30 days.
 ### Docker Images
 
 Docker images are automatically built and published to the GitHub Container Registry:
-- **Registry**: `ghcr.io/christianhoesel/nexus-public-build`
+- **Registry**: `ghcr.io/alfresco/nexus-public-build`
 - **Tags**: 
   - `latest` - Latest build from main branch
   - `<version>` - Specific Nexus version (e.g., `3.97.2-02`)
@@ -163,10 +163,10 @@ Docker images are automatically built and published to the GitHub Container Regi
 
 ```bash
 # Pull latest version
-docker pull ghcr.io/christianhoesel/nexus-public-build:latest
+docker pull ghcr.io/alfresco/nexus-public-build:latest
 
 # Pull specific version
-docker pull ghcr.io/christianhoesel/nexus-public-build:<version>
+docker pull ghcr.io/alfresco/nexus-public-build:<version>
 ```
 
 See [DOCKER.md](DOCKER.md) for complete Docker usage documentation.
