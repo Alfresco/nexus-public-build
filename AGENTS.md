@@ -6,6 +6,13 @@ Builds Sonatype Nexus Repository OSS from the [sonatype/nexus-public](https://gi
 
 This repo is a fork of `ChristianHoesel/nexus-public-build`. It holds no Nexus source of its own: CI checks out a `release-<version>` tag of nexus-public at build time.
 
+## Crediting upstream
+
+When a change reuses work from `ChristianHoesel/nexus-public-build`, credit its author, [ChristianHoesel](https://github.com/ChristianHoesel), clearly:
+
+- In the PR description, say what was ported and link the upstream PR or commits it came from.
+- In the commit message, name the upstream repo and PR (e.g. `Ported from ChristianHoesel/nexus-public-build#16`).
+
 ## Layout
 
 - `.github/workflows/build-nexus.yml` - the only workflow: pre-commit, Maven build, integration test (starts Nexus from the tarball and waits for the status endpoint), GitHub release, and Docker image build/push.
