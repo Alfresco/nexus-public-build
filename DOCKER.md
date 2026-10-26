@@ -277,8 +277,8 @@ docker exec nexus cat /nexus-data/admin.password
 If you want to build the Docker image yourself:
 
 ```bash
-# Build Nexus first
-./build-local.sh release-3.97.2-02
+# Build Nexus first (version from .nexus-version)
+./build-local.sh
 
 # Find the built artifact
 TARBALL=$(find nexus-public -name "nexus-*.tar.gz" | head -n 1)

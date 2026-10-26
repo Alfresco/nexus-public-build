@@ -1,14 +1,13 @@
 name: Build Nexus OSS
 
-run-name: Build Nexus OSS (${{ github.event.inputs.nexus_version || 'release-3.97.2-02' }})
+run-name: Build Nexus OSS (${{ inputs.nexus_version || 'default version' }})
 
 on:
   workflow_dispatch:
     inputs:
       nexus_version:
-        description: 'Nexus version/branch to build (e.g., release-3.97.2-02)'
-        required: true
-        default: 'release-3.97.2-02'
+        description: 'Nexus branch/tag to build (defaults to .nexus-version)'
+        required: false
   push:
     branches:
       - main
@@ -31,21 +30,27 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Resolve Nexus version
+        id: nexus
+        env:
+          NEXUS_INPUT: ${{ inputs.nexus_version }}
+        run: echo "ref=${NEXUS_INPUT:-$(<.nexus-version)}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout Nexus Public
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: sonatype/nexus-public
-          ref: ${{ github.event.inputs.nexus_version || 'release-3.97.2-02' }}
+          ref: ${{ steps.nexus.outputs.ref }}
           path: nexus-public
           fetch-depth: 1
 
       - name: Check for required source patches
         run: |
-          # No source patches are required for Nexus 3.97.2-02.
+          # No source patches are required for the current Nexus version.
           # Sonatype fixed the previously needed workarounds upstream:
           # - AssetBlobCleanupTask now accepts @Nullable RecoveryModeService.
           # - RepositoryInternalResource now accepts @Nullable RepositoryMetricsService.
-          echo "ℹ️  No source patches to apply for ${{ github.event.inputs.nexus_version || 'release-3.97.2-02' }}"
+          echo "ℹ️  No source patches to apply for ${{ steps.nexus.outputs.ref }}"
 
       - name: Set up Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0

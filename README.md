@@ -37,7 +37,7 @@ For detailed Docker usage, configuration, and troubleshooting, see [DOCKER.md](D
 1. Go to the "Actions" tab in this repository
 2. Select the workflow "Build Nexus OSS"
 3. Click on "Run workflow"
-4. Enter the desired Nexus version (e.g., `release-3.97.2-02`)
+4. Leave the version empty to build the one in `.nexus-version`, or enter another branch/tag (e.g., `release-3.94.0-12`)
 5. Built artifacts can be found under "Artifacts" after the build completes
 
 ### Available Versions
@@ -61,8 +61,10 @@ If you want to build locally:
 ```bash
 # Simply use the build script
 chmod +x build-local.sh
-./build-local.sh release-3.97.2-02
+./build-local.sh
 ```
+
+The script builds the version in `.nexus-version`. Pass a branch/tag to build another one, e.g. `./build-local.sh release-3.94.0-12`.
 
 The build script automatically performs the following steps:
 1. Clones the Nexus Public Repository
