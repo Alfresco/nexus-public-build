@@ -1,14 +1,13 @@
 name: Build Nexus OSS
 
-run-name: Build Nexus OSS (${{ github.event.inputs.nexus_version || 'release-3.94.0-12' }})
+run-name: Build Nexus OSS (${{ inputs.nexus_version || 'default version' }})
 
 on:
   workflow_dispatch:
     inputs:
       nexus_version:
-        description: 'Nexus version/branch to build (e.g., release-3.94.0-12)'
-        required: true
-        default: 'release-3.94.0-12'
+        description: 'Nexus branch/tag to build (defaults to .nexus-version)'
+        required: false
   push:
     branches:
       - main
@@ -26,26 +25,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      nexus_ref: ${{ steps.nexus.outputs.ref }}
 
     steps:
       - name: Checkout this repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Resolve Nexus version
+        id: nexus
+        env:
+          NEXUS_INPUT: ${{ inputs.nexus_version }}
+        run: echo "ref=${NEXUS_INPUT:-$(<.nexus-version)}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout Nexus Public
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: sonatype/nexus-public
-          ref: ${{ github.event.inputs.nexus_version || 'release-3.94.0-12' }}
+          ref: ${{ steps.nexus.outputs.ref }}
           path: nexus-public
           fetch-depth: 1
 
       - name: Check for required source patches
+        env:
+          NEXUS_REF: ${{ steps.nexus.outputs.ref }}
         run: |
-          # No source patches are required for Nexus 3.94.0-12.
+          # No source patches are required for the current Nexus version.
           # Sonatype fixed the previously needed workarounds upstream:
           # - AssetBlobCleanupTask now accepts @Nullable RecoveryModeService.
           # - RepositoryInternalResource now accepts @Nullable RepositoryMetricsService.
-          echo "ℹ️  No source patches to apply for ${{ github.event.inputs.nexus_version || 'release-3.94.0-12' }}"
+          echo "ℹ️  No source patches to apply for ${NEXUS_REF}"
 
       - name: Set up Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
@@ -188,7 +197,7 @@ jobs:
       - name: Upload Nexus artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: nexus-oss-build-${{ github.event.inputs.nexus_version || 'latest' }}
+          name: nexus-oss-build-${{ steps.nexus.outputs.ref }}
           path: |
             nexus-public/**/target/nexus-*.tar.gz
             nexus-public/**/target/nexus-*.zip
@@ -206,7 +215,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-artifacts:
-    needs: build
+    needs: [build, integration-test]
     runs-on: ubuntu-latest
     # Deploy only on main branch pushes and manual workflow dispatches, not on PRs
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
@@ -220,7 +229,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: nexus-oss-build-${{ github.event.inputs.nexus_version || 'latest' }}
+          name: nexus-oss-build-${{ needs.build.outputs.nexus_ref }}
           path: ./artifacts
 
       - name: Extract Nexus version from artifact
@@ -246,7 +255,7 @@ jobs:
           body: |
             Nexus Repository OSS build version ${{ steps.version.outputs.version }}
             
-            Built from: ${{ github.event.inputs.nexus_version || 'latest' }}
+            Built from: ${{ needs.build.outputs.nexus_ref }}
             
             ## Artifacts
             - `nexus-${{ steps.version.outputs.version }}-unix.tar.gz` - Linux/Unix distribution
@@ -282,7 +291,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: nexus-oss-build-${{ github.event.inputs.nexus_version || 'latest' }}
+          name: nexus-oss-build-${{ needs.build.outputs.nexus_ref }}
           path: ./artifacts
 
       - name: Extract and prepare Nexus
@@ -423,7 +432,7 @@ jobs:
           fi
 
   build-docker:
-    needs: build
+    needs: [build, integration-test]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -437,7 +446,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: nexus-oss-build-${{ github.event.inputs.nexus_version || 'latest' }}
+          name: nexus-oss-build-${{ needs.build.outputs.nexus_ref }}
           path: ./artifacts
 
       - name: Extract Nexus version from artifact

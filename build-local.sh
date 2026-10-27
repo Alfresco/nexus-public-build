@@ -2,12 +2,12 @@
 set -e
 
 # Local build script for Nexus OSS
-# Usage: ./build-local.sh [version]
+# Usage: ./build-local.sh [version]   (defaults to .nexus-version)
 
-VERSION=${1:-"release-3.94.0-12"}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VERSION=${1:-"$(<"$SCRIPT_DIR/.nexus-version")"}
 NEXUS_DIR="nexus-public"
 PROJECT_VERSION=""
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REQUIRED_JAVA_VERSION="$(<"$SCRIPT_DIR/.java-version")"
 
 echo "========================================"
