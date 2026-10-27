@@ -215,7 +215,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-artifacts:
-    needs: build
+    needs: [build, integration-test]
     runs-on: ubuntu-latest
     # Deploy only on main branch pushes and manual workflow dispatches, not on PRs
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
@@ -432,7 +432,7 @@ jobs:
           fi
 
   build-docker:
-    needs: build
+    needs: [build, integration-test]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
