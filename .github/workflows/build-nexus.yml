@@ -45,12 +45,14 @@ jobs:
           fetch-depth: 1
 
       - name: Check for required source patches
+        env:
+          NEXUS_REF: ${{ steps.nexus.outputs.ref }}
         run: |
           # No source patches are required for the current Nexus version.
           # Sonatype fixed the previously needed workarounds upstream:
           # - AssetBlobCleanupTask now accepts @Nullable RecoveryModeService.
           # - RepositoryInternalResource now accepts @Nullable RepositoryMetricsService.
-          echo "ℹ️  No source patches to apply for ${{ steps.nexus.outputs.ref }}"
+          echo "ℹ️  No source patches to apply for ${NEXUS_REF}"
 
       - name: Set up Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
