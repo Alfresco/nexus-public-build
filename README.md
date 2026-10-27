@@ -118,7 +118,7 @@ bin/nexus run
 
 ## Build Process Details
 
-The build uses a two-phase strategy:
+`build-local.sh` uses a two-phase strategy:
 
 **Phase 1: Frontend Build with Yarn 4**
 - Yarn 4.9.1 is activated via Corepack
@@ -131,6 +131,8 @@ The build uses a two-phase strategy:
 - Maven build with `-Ppublic` profile
 - Flags `-Dskip.installyarn -Dskip.yarn` skip redundant Yarn steps
 - `-DskipTests` speeds up the build (tests optional)
+
+The GitHub Actions workflow is simpler. It runs `yarn install` with Yarn 4 and `YARN_NODE_LINKER=node-modules`, then lets the Maven build run the frontend lifecycle itself, with no switch to Yarn 1.
 
 ## Automatic Builds
 
