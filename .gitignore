@@ -37,3 +37,6 @@ Thumbs.db
 !.devcontainer/
 
 *.log
+
+# Claude Code local artifacts
+.claude

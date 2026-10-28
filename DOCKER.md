@@ -32,12 +32,14 @@ docker-compose down
 ## Accessing Nexus
 
 After starting the container, Nexus will be available at:
-- **URL**: http://localhost:8081
-- **Default credentials**: 
+
+- **URL**: <http://localhost:8081>
+- **Default credentials**:
   - Username: `admin`
   - Password: Located in `/nexus-data/admin.password` inside the container
 
 To retrieve the initial admin password:
+
 ```bash
 docker exec nexus cat /nexus-data/admin.password
 ```
@@ -67,6 +69,7 @@ The Docker image supports the following environment variables:
 ### Data Persistence
 
 The most important volume to persist is `/nexus-data`, which contains:
+
 - Repository data
 - Configuration
 - Logs
@@ -74,6 +77,7 @@ The most important volume to persist is `/nexus-data`, which contains:
 - Admin password
 
 Example with named volume:
+
 ```bash
 docker run -d -p 8081:8081 \
   -v nexus-data:/nexus-data \
@@ -81,6 +85,7 @@ docker run -d -p 8081:8081 \
 ```
 
 Example with host directory:
+
 ```bash
 docker run -d -p 8081:8081 \
   -v /path/to/nexus-data:/nexus-data \
@@ -90,11 +95,13 @@ docker run -d -p 8081:8081 \
 ## Resource Requirements
 
 ### Minimum Requirements
+
 - **CPU**: 2 cores
 - **RAM**: 4 GB (2.7 GB allocated to JVM by default)
 - **Disk**: 10 GB minimum (depends on repository usage)
 
 ### Recommended Production Settings
+
 - **CPU**: 4+ cores
 - **RAM**: 8 GB (adjust JVM settings accordingly)
 - **Disk**: 50 GB+ (depends on repository size)
@@ -111,6 +118,7 @@ docker run -d -p 8081:8081 \
 ```
 
 Or in docker-compose.yml:
+
 ```yaml
 environment:
   - INSTALL4J_ADD_VM_PARAMS=-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=/nexus-data/javaprefs
@@ -125,6 +133,7 @@ environment:
 All tags are published as multi-arch manifests for `linux/amd64` and `linux/arm64`, so `docker pull`/`docker run` picks the right variant automatically on Apple Silicon or ARM servers.
 
 Example:
+
 ```bash
 docker pull ghcr.io/alfresco/nexus-public-build:3.97.2-02
 ```
@@ -132,11 +141,13 @@ docker pull ghcr.io/alfresco/nexus-public-build:3.97.2-02
 ## Health Check
 
 The Docker image includes a built-in health check that:
+
 - Runs every 30 seconds
 - Has a 180-second startup grace period
 - Checks if Nexus is responding on port 8081
 
 Check container health:
+
 ```bash
 docker ps
 # or
@@ -155,18 +166,19 @@ docker run -d -p 9000:8081 \
   ghcr.io/alfresco/nexus-public-build:latest
 ```
 
-Access at: http://localhost:9000
+Access at: <http://localhost:9000>
 
 ### Reverse Proxy
 
 For production use, it's recommended to use a reverse proxy (nginx, Apache, Traefik) with HTTPS.
 
 Example nginx configuration:
+
 ```nginx
 server {
     listen 80;
     server_name nexus.example.com;
-    
+
     location / {
         proxy_pass http://localhost:8081/;
         proxy_set_header Host $host;
@@ -220,16 +232,19 @@ docker start nexus
 ### Container won't start
 
 1. Check logs:
+
    ```bash
    docker logs nexus
    ```
 
 2. Verify volume permissions:
+
    ```bash
    docker run --rm -v nexus-data:/data ubuntu ls -la /data
    ```
 
 3. Check available memory:
+
    ```bash
    docker stats nexus
    ```
@@ -243,11 +258,13 @@ docker start nexus
 ### Cannot access Nexus UI
 
 1. Verify container is running:
+
    ```bash
    docker ps | grep nexus
    ```
 
 2. Check if port is accessible:
+
    ```bash
    curl http://localhost:8081
    ```
@@ -311,5 +328,6 @@ docker run -d -p 8081:8081 -v nexus-data:/nexus-data nexus-oss:custom
 ## Support
 
 For issues related to:
+
 - **This Docker image**: Open an issue in this repository
 - **Nexus OSS itself**: Visit the [Sonatype Community](https://community.sonatype.com/)

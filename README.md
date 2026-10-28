@@ -5,6 +5,7 @@ This repository serves as a build wrapper for [Sonatype Nexus Repository OSS](ht
 ## Problem
 
 The official Nexus Public Repository has some challenges:
+
 - A separate branch is created for each version (e.g., `release-3.86.0-08`)
 - The `main` branch is only sporadically updated (last update: February 2025)
 - Releases are maintained as separate branches and tags, not as continuous development in the main branch
@@ -14,6 +15,7 @@ The official Nexus Public Repository has some challenges:
 ## Solution
 
 This repository automates the build process with GitHub Actions and creates usable artifacts:
+
 - **Build artifacts**: `.tar.gz` and `.zip` distributions
 - **Docker images**: Automatically built and published to GitHub Container Registry
 
@@ -26,7 +28,7 @@ docker pull ghcr.io/alfresco/nexus-public-build:latest
 docker run -d -p 8081:8081 -v nexus-data:/nexus-data ghcr.io/alfresco/nexus-public-build:latest
 ```
 
-Access Nexus at http://localhost:8081
+Access Nexus at <http://localhost:8081>
 
 For detailed Docker usage, configuration, and troubleshooting, see [DOCKER.md](DOCKER.md).
 
@@ -43,14 +45,15 @@ For detailed Docker usage, configuration, and troubleshooting, see [DOCKER.md](D
 ### Available Versions
 
 Find Nexus versions here:
-- **Branches**: https://github.com/sonatype/nexus-public/branches/all
-- **Releases/Tags**: https://github.com/sonatype/nexus-public/releases
+
+- **Branches**: <https://github.com/sonatype/nexus-public/branches/all>
+- **Releases/Tags**: <https://github.com/sonatype/nexus-public/releases>
 
 Current examples (as of October 2026):
+
 - `release-3.97.2-02` (latest)
 - `release-3.94.0-12`
 - `release-3.93.0-06`
-
 
 **Note**: Branch names correspond to release tags. Use the branch name for the build.
 
@@ -67,6 +70,7 @@ chmod +x build-local.sh
 The script builds the version in `.nexus-version`. Pass a branch/tag to build another one, e.g. `./build-local.sh release-3.94.0-12`.
 
 The build script automatically performs the following steps:
+
 1. Clones the Nexus Public Repository
 2. Enables Corepack and configures Yarn 4 with `nodeLinker: node-modules`
 3. Installs all dependencies with Yarn 4
@@ -76,6 +80,7 @@ The build script automatically performs the following steps:
 7. Creates `.tar.gz` and `.zip` distributions
 
 The finished artifacts can then be found in the Nexus build tree:
+
 - `nexus-*-unix.tar.gz` (~133 MB)
 - `nexus-*-unix.zip`
 
@@ -96,6 +101,7 @@ bin/nexus run
 ```
 
 The `nexus-env.sh` script sets the required `INSTALL4J_ADD_VM_PARAMS` environment variable with:
+
 - Memory settings (2.7GB heap and direct memory by default)
 - Java preferences location
 
@@ -120,13 +126,15 @@ bin/nexus run
 
 `build-local.sh` uses a two-phase strategy:
 
-**Phase 1: Frontend Build with Yarn 4**
+### Phase 1: Frontend Build with Yarn 4
+
 - Yarn 4.9.1 is activated via Corepack
 - `nodeLinker: node-modules` for rspack compatibility
 - Dependencies are installed with `yarn install --no-immutable`
 - Frontend components are built with `yarn workspaces foreach run build-all`
 
-**Phase 2: Maven Build with Yarn 1**
+### Phase 2: Maven Build with Yarn 1
+
 - Switch to Yarn 1.22.22 (via `npm install -g yarn@1.22.22`)
 - Maven build with `-Ppublic` profile
 - Flags `-Dskip.installyarn -Dskip.yarn` skip redundant Yarn steps
@@ -137,7 +145,8 @@ The GitHub Actions workflow is simpler. It runs `yarn install` with Yarn 4 and `
 ## Automatic Builds
 
 The GitHub Actions workflow automatically runs builds:
-- **On Push**: To the main branch  
+
+- **On Push**: To the main branch
 - **Manual**: Via workflow_dispatch with version selection
 
 Weekly automatic builds are currently disabled (can be enabled via cron schedule).
@@ -147,6 +156,7 @@ Weekly automatic builds are currently disabled (can be enabled via cron schedule
 After a successful build, the following artifacts are provided:
 
 ### Build Artifacts
+
 - `nexus-*.tar.gz` - Unix/Linux distribution
 - `nexus-*.zip` - Windows distribution
 
@@ -155,8 +165,9 @@ Artifacts are kept for 30 days.
 ### Docker Images
 
 Docker images are automatically built and published to the GitHub Container Registry:
+
 - **Registry**: `ghcr.io/alfresco/nexus-public-build`
-- **Tags**: 
+- **Tags**:
   - `latest` - Latest build from main branch
   - `<version>` - Specific Nexus version (e.g., `3.97.2-02`)
   - `<branch>-<sha>` - Branch-specific builds
