@@ -21,7 +21,7 @@ check_requirements() {
     echo "Checking build requirements..."
 
     rm -rf nexus-public/
-    
+
     # Check Java version
     if ! command -v java &> /dev/null; then
         echo "❌ Java not found. Please install Java $REQUIRED_JAVA_VERSION."
@@ -30,7 +30,8 @@ check_requirements() {
 
     # Set JAVA_HOME if not set
     if [ -z "$JAVA_HOME" ]; then
-        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+        JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+        export JAVA_HOME
         echo "✅ JAVA_HOME set: $JAVA_HOME"
     fi
 
@@ -40,14 +41,14 @@ check_requirements() {
         exit 1
     fi
     echo "✅ Java $JAVA_VERSION found"
-    
+
     # Check Node.js
     if ! command -v node &> /dev/null; then
         echo "❌ Node.js not found. Please install Node.js 18+."
         exit 1
     fi
     echo "✅ Node.js $(node -v) found"
-    
+
     # Enable Corepack (for Yarn 4.x)
     if ! command -v corepack &> /dev/null; then
         echo "⚠️  Corepack not found."
@@ -59,7 +60,7 @@ check_requirements() {
 
     YARN_VERSION=$(yarn --version 2>/dev/null || echo "not installed")
     echo "✅ Yarn $YARN_VERSION found"
-    
+
     echo ""
 }
 
@@ -78,19 +79,19 @@ clone_or_update() {
     else
         echo "📥 Cloning Nexus repository..."
         git clone --depth 1 --branch "$VERSION" https://github.com/sonatype/nexus-public.git "$NEXUS_DIR"
-        
+
         # Delete .gitignore and .git in nexus-public directory
         if [ -f "$NEXUS_DIR/.gitignore" ]; then
             echo "🗑️  Removing nexus-public/.gitignore..."
             rm "$NEXUS_DIR/.gitignore"
         fi
-        
+
         if [ -d "$NEXUS_DIR/.git" ]; then
             echo "🗑️  Removing nexus-public/.git directory..."
             rm -rf "$NEXUS_DIR/.git"
         fi
     fi
-    
+
     if [ -f "$NEXUS_DIR/pom.xml" ]; then
         PROJECT_VERSION=$(grep '<version>' "$NEXUS_DIR/pom.xml" | sed 's/.*<version>\(.*\)<\/version>.*/\1/' | sed -n '2p')
         PROJECT_VERSION=${PROJECT_VERSION:-custom}
@@ -114,7 +115,7 @@ check_java_versions() {
 install_dependencies() {
     echo "📦 Installing dependencies in workspace root..."
     cd "$NEXUS_DIR"
-    
+
     # Enable Corepack for Yarn 4.x
     corepack enable 2>/dev/null || true
     corepack prepare yarn@4.9.1 --activate 2>/dev/null || true
@@ -124,7 +125,7 @@ install_dependencies() {
 
     # Install dependencies with the Yarn defined in the repository
     yarn install
-    
+
     echo ""
     cd ..
 }
@@ -133,9 +134,9 @@ install_dependencies() {
 build_frontend() {
     echo "🎨 Building frontend components..."
     cd "$NEXUS_DIR"
-    
+
     yarn workspaces foreach --all --topological-dev run build-all
-    
+
     echo ""
     cd ..
 }
@@ -144,18 +145,19 @@ build_frontend() {
 build_nexus() {
     echo "🔨 Starting Maven build (skipping frontend steps)..."
     cd "$NEXUS_DIR"
-    
+
     # Ensure JAVA_HOME
     if [ -z "$JAVA_HOME" ]; then
-        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+        JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+        export JAVA_HOME
     fi
-    
+
     # Maven options for performance
     export MAVEN_OPTS="-Xmx4g -XX:+UseG1GC"
-    
+
     echo "Running fast build without tests..."
     mvn install -Ppublic -DskipTests -Dmaven.javadoc.skip=true -ntp -Dskip.installyarn -Dskip.yarn
-    
+
     echo ""
     cd ..
 }
@@ -203,20 +205,20 @@ EOF
 find_artifacts() {
     echo "📦 Searching for build artifacts..."
     cd "$NEXUS_DIR"
-    
+
     ARTIFACTS=$(find . -name "nexus-*.tar.gz" -o -name "nexus-*.zip" 2>/dev/null)
-    
+
     if [ -z "$ARTIFACTS" ]; then
         echo "❌ No artifacts found!"
         exit 1
     fi
-    
+
     echo "✅ Found artifacts:"
     echo "$ARTIFACTS" | while read -r artifact; do
         SIZE=$(du -h "$artifact" | cut -f1)
         echo "  - $artifact ($SIZE)"
     done
-    
+
     echo ""
     echo "🎉 Build completed successfully!"
     echo ""
