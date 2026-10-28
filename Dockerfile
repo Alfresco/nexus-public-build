@@ -26,7 +26,7 @@ LABEL org.opencontainers.image.title="Nexus Repository OSS" \
       org.opencontainers.image.description="Sonatype Nexus Repository OSS" \
       org.opencontainers.image.version="${NEXUS_VERSION}" \
       org.opencontainers.image.vendor="Sonatype" \
-      org.opencontainers.image.source="https://github.com/ChristianHoesel/nexus-public-build"
+      org.opencontainers.image.source="https://github.com/Alfresco/nexus-public-build"
 
 # Install curl for health check
 RUN apt-get update && \

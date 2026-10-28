@@ -8,12 +8,12 @@ This repository automatically builds Docker images of Sonatype Nexus Repository 
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/christianhoesel/nexus-public-build:latest
+docker pull ghcr.io/alfresco/nexus-public-build:latest
 
 # Run Nexus
 docker run -d -p 8081:8081 --name nexus \
   -v nexus-data:/nexus-data \
-  ghcr.io/christianhoesel/nexus-public-build:latest
+  ghcr.io/alfresco/nexus-public-build:latest
 ```
 
 ### Using Docker Compose
@@ -81,7 +81,7 @@ Example with named volume:
 ```bash
 docker run -d -p 8081:8081 \
   -v nexus-data:/nexus-data \
-  ghcr.io/christianhoesel/nexus-public-build:latest
+  ghcr.io/alfresco/nexus-public-build:latest
 ```
 
 Example with host directory:
@@ -89,7 +89,7 @@ Example with host directory:
 ```bash
 docker run -d -p 8081:8081 \
   -v /path/to/nexus-data:/nexus-data \
-  ghcr.io/christianhoesel/nexus-public-build:latest
+  ghcr.io/alfresco/nexus-public-build:latest
 ```
 
 ## Resource Requirements
@@ -114,7 +114,7 @@ To allocate more memory (e.g., 4 GB):
 docker run -d -p 8081:8081 \
   -v nexus-data:/nexus-data \
   -e INSTALL4J_ADD_VM_PARAMS="-Xms4g -Xmx4g -XX:MaxDirectMemorySize=4g -Djava.util.prefs.userRoot=/nexus-data/javaprefs" \
-  ghcr.io/christianhoesel/nexus-public-build:latest
+  ghcr.io/alfresco/nexus-public-build:latest
 ```
 
 Or in docker-compose.yml:
@@ -135,7 +135,7 @@ All tags are published as multi-arch manifests for `linux/amd64` and `linux/arm6
 Example:
 
 ```bash
-docker pull ghcr.io/christianhoesel/nexus-public-build:3.97.2-02
+docker pull ghcr.io/alfresco/nexus-public-build:3.97.2-02
 ```
 
 ## Health Check
@@ -163,7 +163,7 @@ Nexus uses port 8081 by default. To use a different host port:
 ```bash
 docker run -d -p 9000:8081 \
   -v nexus-data:/nexus-data \
-  ghcr.io/christianhoesel/nexus-public-build:latest
+  ghcr.io/alfresco/nexus-public-build:latest
 ```
 
 Access at: <http://localhost:9000>
@@ -323,7 +323,7 @@ docker run -d -p 8081:8081 -v nexus-data:/nexus-data nexus-oss:custom
 
 - [Nexus Repository Documentation](https://help.sonatype.com/repomanager3)
 - [Sonatype Community](https://community.sonatype.com/)
-- [GitHub Repository](https://github.com/ChristianHoesel/nexus-public-build)
+- [GitHub Repository](https://github.com/Alfresco/nexus-public-build)
 
 ## Support
 

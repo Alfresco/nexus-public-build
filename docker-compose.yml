@@ -1,6 +1,6 @@
 services:
   nexus:
-    image: ghcr.io/christianhoesel/nexus-public-build:latest
+    image: ghcr.io/alfresco/nexus-public-build:latest
     container_name: nexus-oss
     restart: unless-stopped
     ports:
